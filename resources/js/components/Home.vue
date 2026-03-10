@@ -2,6 +2,7 @@
     <div>
         <div class="container my-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
+       
                 <h1 class="h3">Gastos - Mes actual</h1>
                 <select v-model="usuario" class="form-select">
                     <option value="1">Juan</option>

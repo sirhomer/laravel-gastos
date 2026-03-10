@@ -42,17 +42,23 @@ class GoogleAuthController extends Controller
         $googleUser = $googleUserResponse->json();
         
         // 3. Autenticación o creación del usuario en la base de datos
-        $user = User::firstOrCreate(
+        /*$user = User::firstOrCreate(
             ['email' => $googleUser['email']],
             [
                 'name' => $googleUser['name'],
                 'password' => bcrypt(Str::random(16)), // Generar una contraseña aleatoria
             ]
-        );
-
+        );*/
+        $user = User::where('email', $googleUser['email'])->first();
+        if (!$user) {
+            // Si el usuario no existe, redirigir al login con un mensaje de error
+            return redirect('/login')->withErrors('El usuario no está registrado. Por favor, contacta al administrador.');
+        }
         // 4. Iniciar sesión y redirigir
-        Auth::login($user);
-
+           Auth::login($user);
+        if (!Auth::check()) {
+            return redirect('/login')->withErrors('No se pudo iniciar sesión. Por favor, inténtalo de nuevo.');
+        }
         return redirect('/dashboard'); // Redirige a la página de inicio de tu aplicación
     }
 }

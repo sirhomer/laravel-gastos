@@ -8,8 +8,8 @@ export default defineConfig({
         port: 5188,
         strictPort: true,
         hmr: {
-            host: '192.168.1.4', // Tu IP local
-            protocol: 'ws'
+            host: '192.168.1.4',
+            protocol: 'wss'
         }
     },
     plugins: [

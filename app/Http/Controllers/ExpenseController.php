@@ -36,8 +36,8 @@ class ExpenseController extends Controller
 
         $data['installments'] = $data['installments'] ?? 1;
 
-    // intentar obtener user_id del auth, si no, fallback a 1
-    $userId = $request->input('usuario', Auth::id());
+        // intentar obtener user_id del auth, si no, fallback a 1
+        $userId = $request->input('usuario', Auth::id());
 
         DB::beginTransaction();
         try {
@@ -105,14 +105,25 @@ class ExpenseController extends Controller
     {
         //
     }
-    public function currentMonthExpenses( Request $request)
+    public function currentMonthExpenses(Request $request)
     {
 
         // intentar obtener user_id del auth, si no, fallback a 1
         $userId = $request->input('user_id', Auth::id());
+        if ($request->input('month')) {
 
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
+            $month = $request->input('month');
+            $startOfMonth = is_numeric($month)
+                ? Carbon::create(null, $month, 1)->startOfMonth()
+                : Carbon::parse($month)->startOfMonth();
+
+            $endOfMonth = is_numeric($month)
+                ? Carbon::create(null, $month, 1)->endOfMonth()
+                : Carbon::parse($month)->endOfMonth();
+        } else {
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $endOfMonth = Carbon::now()->endOfMonth();
+        }
 
         // Obtener las cuotas (installments) que pertenecen al usuario para el mes actual.
         // Hacemos un join con la tabla expenses para filtrar por user_id.

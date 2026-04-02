@@ -5,7 +5,7 @@ use App\Http\Controllers\IncomesController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
-    
+
 });
 Route::post('/expenses', [ExpenseController::class, 'store']);
 Route::post('/incomes', [IncomesController::class, 'store']);

@@ -8,6 +8,21 @@
                     <option value="1">Juan</option>
                     <option value="2">Olga</option>
                 </select>
+                <select v-model="month" class="form-select">
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+                
                 <button class="btn btn-outline-primary" @click="load" :disabled="loading">
                     <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     <span v-if="!loading">Actualizar</span>
@@ -81,6 +96,7 @@ export default {
         return {
             usuario: 1,
             installments: [],
+            month: '',
             totals: {
                 total_expenses: 0,
                 total_incomes: 0,
@@ -98,7 +114,7 @@ export default {
             this.loading = true;
             this.error = null;
             try {
-                const res = await fetch(`/api/expenses/current-month?user_id=${this.usuario}`);
+                const res = await fetch(`/api/expenses/current-month?user_id=${this.usuario}&month=${this.month}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 this.installments = data.installments || [];

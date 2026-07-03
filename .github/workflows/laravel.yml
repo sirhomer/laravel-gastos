@@ -1,40 +1,11 @@
-name: Deploy Laravel Gastos to Nomad
-
-on:
-  push:
-    branches: [ main, master ]
-
-jobs:
-  deploy:
-    # Corre directo en el sistema operativo del runner, sin exigir Docker intermedio
-    runs-on: self-hosted 
-
-    steps:
-      - name: Check out del código 📂
+steps:
+      - name: Check out del código directo al NFS 📂
+        # Al no poner 'path', se clona en la raíz de /actions-runner/_work
+        # que es justamente tu carpeta física /mnt/usb/dmz/deploy/laravel-gastos
         uses: actions/checkout@v4
-
-      - name: Configurar Clave SSH 🔑
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-      - name: Sincronizar Código al NFS vía SSH 🔄
-        run: |
-          # 1. Creamos la carpeta en el storage por si no existe
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jcastellano@192.168.1.4 "mkdir -p /mnt/usb/dmz/deploy/laravel-gastos/"
-          
-          # 2. Empaquetamos y enviamos
-          tar -czf - --exclude='.git' --exclude='node_modules' . | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jcastellano@192.168.1.4 "tar -xzf - -C /mnt/usb/dmz/deploy/laravel-gastos/"
-          
-          # 3. Permisos
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jcastellano@192.168.1.4 "
-            cd /mnt/usb/dmz/deploy/laravel-gastos/ && \
-            sudo chown -R www-data:www-data storage/ bootstrap/
-          "
 
       - name: Desplegar en Nomad Server 🚀
         run: |
           export NOMAD_ADDR="${{ secrets.SERVER_NOMAD }}"
+          # El archivo laravel.nomad.hcl va a estar disponible directo en la raíz
           nomad job run laravel.nomad.hcl

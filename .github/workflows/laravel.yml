@@ -12,19 +12,30 @@ jobs:
       - name: Check out del código directo al NFS 📂
         uses: actions/checkout@v4
 
-      # 🧪 EJEMPLO FUTURO DE TEST: 
-      # Si necesitás usar tu imagen de deploys para testear, podés correr un contenedor aislado temporal así:
-      # - name: Ejecutar Tests dentro de tu contenedor de sistemas 🧪
-      #   run: |
-      #     docker run --rm -v ${{ github.workspace }}:/app -w /app registry.sistemas:5000/jcastellano/deploys:latest php artisan test
-
-      - name: Instalar CLI de Nomad en caliente 🛠️
+      - name: Instalar CLI de Nomad en el Runner (Multi-arquitectura) 🛠️
         run: |
           if ! command -v nomad &> /dev/null; then
-            curl -fsSL https://releases.hashicorp.com/nomad/1.8.1/nomad_1.8.1_linux_amd64.zip -o nomad.zip
+            # 1. Detectar arquitectura de la máquina (amd64 o arm64)
+            ARCH=$(uname -m)
+            if [ "$ARCH" = "x86_64" ]; then
+              NOMAD_ARCH="amd64"
+            elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+              NOMAD_ARCH="arm64"
+            else
+              echo "Arquitectura no soportada: $ARCH" && exit 1
+            fi
+            
+            echo "Detectada arquitectura $ARCH. Descargando Nomad para $NOMAD_ARCH..."
+            
+            # 2. Descargar el binario correcto
+            curl -fsSL "https://releases.hashicorp.com/nomad/1.8.1/nomad_1.8.1_linux_${NOMAD_ARCH}.zip" -o nomad.zip
+            
+            # 3. Descomprimir e instalar
             unzip nomad.zip
             sudo mv nomad /usr/local/bin/
             rm nomad.zip
+          else
+            echo "Nomad ya está instalado."
           fi
 
       - name: Desplegar en Nomad Server 🚀

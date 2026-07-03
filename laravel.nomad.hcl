@@ -124,6 +124,8 @@ VITE_PORT=5188
 GOOGLE_CLIENT_ID=311900476660-vfm1unmmgf9k3ntbdlie6k35h25np8fn.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=https://gastos.jcastellano.com.ar/auth/google/callback
+{{ end }}
+EOH
       }
 
       resources {

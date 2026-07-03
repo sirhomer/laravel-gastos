@@ -6,16 +6,11 @@ on:
 
 jobs:
   deploy:
-    # Corre en tu infraestructura local segura
+    # Corre directo en el sistema operativo del runner, sin exigir Docker intermedio
     runs-on: self-hosted 
-    
-    # Mantenemos tu imagen personalizada con las herramientas de despliegue
-    container:
-      image: registry.sistemas:5000/jcastellano/deploys:latest
 
     steps:
       - name: Check out del código 📂
-        # Esto clona automáticamente sirhomer/laravel-gastos
         uses: actions/checkout@v4
 
       - name: Configurar Clave SSH 🔑
@@ -27,13 +22,13 @@ jobs:
 
       - name: Sincronizar Código al NFS vía SSH 🔄
         run: |
-          # 1. Creamos la carpeta del nuevo proyecto en el storage por si no existe
+          # 1. Creamos la carpeta en el storage por si no existe
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jcastellano@192.168.1.4 "mkdir -p /mnt/usb/dmz/deploy/laravel-gastos/"
           
-          # 2. Empaquetamos el código recién clonado de GitHub y lo extraemos en el storage local
+          # 2. Empaquetamos y enviamos
           tar -czf - --exclude='.git' --exclude='node_modules' . | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jcastellano@192.168.1.4 "tar -xzf - -C /mnt/usb/dmz/deploy/laravel-gastos/"
           
-          # 3. Permisos correctos para Laravel en producción
+          # 3. Permisos
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jcastellano@192.168.1.4 "
             cd /mnt/usb/dmz/deploy/laravel-gastos/ && \
             sudo chown -R www-data:www-data storage/ bootstrap/
@@ -41,6 +36,5 @@ jobs:
 
       - name: Desplegar en Nomad Server 🚀
         run: |
-          # Apunta a la API de tu Nomad local
           export NOMAD_ADDR="${{ secrets.SERVER_NOMAD }}"
           nomad job run laravel.nomad.hcl

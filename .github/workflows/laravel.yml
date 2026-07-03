@@ -12,30 +12,41 @@ jobs:
       - name: Check out del código directo al NFS 📂
         uses: actions/checkout@v4
 
-      - name: Instalar CLI de Nomad en el Runner (Multi-arquitectura) 🛠️
+      - name: Instalar CLI de Nomad en el Runner (Detección Absoluta) 🛠️
         run: |
           if ! command -v nomad &> /dev/null; then
-            # 1. Detectar arquitectura de la máquina (amd64 o arm64)
-            ARCH=$(uname -m)
-            if [ "$ARCH" = "x86_64" ]; then
-              NOMAD_ARCH="amd64"
-            elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
-              NOMAD_ARCH="arm64"
-            else
-              echo "Arquitectura no soportada: $ARCH" && exit 1
-            fi
+            # 1. Obtener la arquitectura exacta del sistema
+            RAW_ARCH=$(uname -m)
+            echo "Arquitectura cruda detectada por el sistema: $RAW_ARCH"
             
-            echo "Detectada arquitectura $ARCH. Descargando Nomad para $NOMAD_ARCH..."
+            # 2. Normalizar la arquitectura para HashiCorp Nomad
+            case "$RAW_ARCH" in
+              x86_64|amd64)
+                NOMAD_ARCH="amd64"
+                ;;
+              aarch64|arm64|armv8*)
+                NOMAD_ARCH="arm64"
+                ;;
+              armv7*|armhf)
+                NOMAD_ARCH="arm"
+                ;;
+              i386|i686)
+                NOMAD_ARCH="388"
+                ;;
+              *)
+                echo "Error: Arquitectura desconocida ($RAW_ARCH)" && exit 1
+                ;;
+            esac
             
-            # 2. Descargar el binario correcto
+            echo "Descargando binario oficial de Nomad para arquitectura: $NOMAD_ARCH"
+            
+            # 3. Descargar, descomprimir e instalar
             curl -fsSL "https://releases.hashicorp.com/nomad/1.8.1/nomad_1.8.1_linux_${NOMAD_ARCH}.zip" -o nomad.zip
-            
-            # 3. Descomprimir e instalar
             unzip nomad.zip
             sudo mv nomad /usr/local/bin/
             rm nomad.zip
           else
-            echo "Nomad ya está instalado."
+            echo "Nomad ya está instalado y disponible."
           fi
 
       - name: Desplegar en Nomad Server 🚀

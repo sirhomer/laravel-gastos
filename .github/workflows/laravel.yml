@@ -9,13 +9,13 @@ jobs:
     runs-on: self-hosted 
 
   steps:
-      - name: Check out del código directo al NFS 📂
+    - name: Check out del código directo al NFS 📂
         # Al no poner 'path', se clona en la raíz de /actions-runner/_work
         # que es justamente tu carpeta física /mnt/usb/dmz/deploy/laravel-gastos
         uses: actions/checkout@v4
 
-      - name: Desplegar en Nomad Server 🚀
-        run: |
+    - name: Desplegar en Nomad Server 🚀
+      run: |
           export NOMAD_ADDR="${{ secrets.SERVER_NOMAD }}"
           # El archivo laravel.nomad.hcl va a estar disponible directo en la raíz
           nomad job run laravel.nomad.hcl

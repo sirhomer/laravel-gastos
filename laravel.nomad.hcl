@@ -17,7 +17,7 @@ job "gastos-app" {
       port = "http"
       tags = [
         "traefik.enable=true",
-      "traefik.http.routers.gastos.rule=Host(`gastos.jcastellano.com.ar`)",
+        "traefik.http.routers.gastos.rule=Host(`gastos.jcastellano.com.ar`)",
         "traefik.http.routers.gastos.entrypoints=https",
         "traefik.http.routers.gastos.tls=true",
         
@@ -25,9 +25,7 @@ job "gastos-app" {
         "traefik.http.routers.gastos-http.rule=Host(`gastos.jcastellano.com.ar`)",
         "traefik.http.routers.gastos-http.entrypoints=http",
         "traefik.http.routers.gastos-http.middlewares=redirect-to-https",
-        "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https",
- 		
-        
+        "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       ]
     }
 
@@ -53,7 +51,6 @@ job "gastos-app" {
         env         = true # <-- Clave: Hace que las líneas de abajo actúen como variables del OS
 
         data = <<EOH
-
 APP_NAME=Laravel
 APP_ENV=local
 APP_KEY=base64:aoGfeTEb1TUUkGRagm5OfohoPqT+EEcwc205laK/hyM=
@@ -124,7 +121,6 @@ VITE_PORT=5188
 GOOGLE_CLIENT_ID=311900476660-vfm1unmmgf9k3ntbdlie6k35h25np8fn.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=https://gastos.jcastellano.com.ar/auth/google/callback
-{{ end }}
 EOH
       }
 

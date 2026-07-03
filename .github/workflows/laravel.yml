@@ -6,38 +6,28 @@ on:
 
 jobs:
   deploy:
-    # Corre en tu infraestructura local
     runs-on: self-hosted 
-    
-    # Levantamos tu contenedor personalizado con todas tus herramientas internas
-    container:
-      image: registry.sistemas:5000/jcastellano/deploys:latest
-      # Le pasamos el volumen del NFS al contenedor de la gitacción
-      volumes:
-        - /mnt/usb/dmz/deploy/laravel-gastos:/mnt/usb/dmz/deploy/laravel-gastos
 
     steps:
-      - name: Check out del código 📂
+      - name: Check out del código directo al NFS 📂
         uses: actions/checkout@v4
 
-      # 💡 ACÁ PODÉS AGREGAR TUS PASOS DE TEST FUTUROS
-      # - name: Ejecutar Tests 🧪
+      # 🧪 EJEMPLO FUTURO DE TEST: 
+      # Si necesitás usar tu imagen de deploys para testear, podés correr un contenedor aislado temporal así:
+      # - name: Ejecutar Tests dentro de tu contenedor de sistemas 🧪
       #   run: |
-      #     composer install
-      #     php artisan test
+      #     docker run --rm -v ${{ github.workspace }}:/app -w /app registry.sistemas:5000/jcastellano/deploys:latest php artisan test
 
-      - name: Sincronizar Código al NFS local 🔄
+      - name: Instalar CLI de Nomad en caliente 🛠️
         run: |
-          # Como estás dentro de tu contenedor con rsync/cp y el volumen está montado,
-          # copiamos el código limpio directo a la ruta del NFS local
-          mkdir -p /mnt/usb/dmz/deploy/laravel-gastos/
-          rsync -av --exclude='.git' --exclude='node_modules' ./ /mnt/usb/dmz/deploy/laravel-gastos/
-          
-          # Ajustamos permisos (si tu imagen tiene sudo o corre como root)
-          # chown -R www-data:www-data /mnt/usb/dmz/deploy/laravel-gastos/storage/
+          if ! command -v nomad &> /dev/null; then
+            curl -fsSL https://releases.hashicorp.com/nomad/1.8.1/nomad_1.8.1_linux_amd64.zip -o nomad.zip
+            unzip nomad.zip
+            sudo mv nomad /usr/local/bin/
+            rm nomad.zip
+          fi
 
       - name: Desplegar en Nomad Server 🚀
         run: |
           export NOMAD_ADDR="${{ secrets.SERVER_NOMAD }}"
-          # Tu imagen ya tiene el comando 'nomad' instalado, así que corre directo
           nomad job run laravel.nomad.hcl

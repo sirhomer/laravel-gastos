@@ -1,4 +1,14 @@
-steps:
+name: Deploy Laravel Gastos to Nomad
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted 
+
+  steps:
       - name: Check out del código directo al NFS 📂
         # Al no poner 'path', se clona en la raíz de /actions-runner/_work
         # que es justamente tu carpeta física /mnt/usb/dmz/deploy/laravel-gastos

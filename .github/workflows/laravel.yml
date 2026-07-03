@@ -11,5 +11,28 @@ jobs:
     steps:
       - name: Check out del código directo al NFS 📂
         uses: actions/checkout@v4
+        with:
+          # Evita que Git borre carpetas locales necesarias que no están en el repo (como storage o .env)
+          clean: false
 
-  
+      - name: Instalar CLI de Nomad en el Runner 🛠️
+        run: |
+          sudo rm -f /usr/local/bin/nomad
+          RAW_ARCH=$(uname -m)
+          case "$RAW_ARCH" in
+            x86_64|amd64) NOMAD_ARCH="amd64" ;;
+            aarch64|arm64|armv8*) NOMAD_ARCH="arm64" ;;
+            armv7*|armhf) NOMAD_ARCH="arm" ;;
+            i386|i686) NOMAD_ARCH="386" ;;
+            *) echo "Error: Arquitectura desconocida ($RAW_ARCH)" && exit 1 ;;
+          esac
+          curl -fsSL "https://releases.hashicorp.com/nomad/1.8.1/nomad_1.8.1_linux_${NOMAD_ARCH}.zip" -o nomad.zip
+          unzip -o nomad.zip
+          sudo mv nomad /usr/local/bin/
+          rm -f nomad.zip
+
+      - name: Desplegar en Nomad Server 🚀
+        run: |
+          export NOMAD_ADDR="${{ secrets.SERVER_NOMAD }}"
+          # Ejecuta el archivo .hcl que ya se descargó directo en el volumen
+          /usr/local/bin/nomad job run laravel.nomad.hcl

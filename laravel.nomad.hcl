@@ -32,10 +32,7 @@ job "gastos-app" {
     task "gastos" {
       driver = "docker"
 
-      # 🔐 Habilitamos el bloque Vault para obtener y renovar el token del task.
-      vault {
-        policies = ["laravel-gastos"]
-      }
+     
 
       config {
         image = "sirhomer/php-arm:8.4"
@@ -44,10 +41,9 @@ job "gastos-app" {
         ]
         ports = ["http"]
       }
-
-      # 🔐 INYECTAMOS LAS VARIABLES DIRECTAMENTE EN LA MEMORIA DEL CONTENEDOR
+   # 🔐 INYECTAMOS LAS VARIABLES DIRECTAMENTE EN LA MEMORIA DEL CONTENEDOR
       template {
-        destination = "secrets/env"
+        destination = "/secret/.env"
         env         = true # <-- Clave: Hace que las líneas de abajo actúen como variables del OS
 
         data = <<EOH
@@ -74,11 +70,11 @@ LOG_DEPRECATIONS_CHANNEL=null
 LOG_LEVEL=debug
 
 DB_CONNECTION=mysql
-DB_HOST=192.168.1.4
+DB_HOST="{{ with nomadVar "nomad/jobs/gastos-app" }}{{ .DB_HOST }}{{ end }}"
 DB_PORT=3306
-DB_DATABASE=laravel_gastos
-DB_USERNAME=
-DB_PASSWORD=
+DB_DATABASE="{{ with nomadVar "nomad/jobs/gastos-app" }}{{ .DB_DATABASE }}{{ end }}"
+DB_USERNAME="{{ with nomadVar "nomad/jobs/gastos-app" }}{{ .DB_USERNAME }}{{ end }}"
+DB_PASSWORD="{{ with nomadVar "nomad/jobs/gastos-app" }}{{ .DB_PASSWORD }}{{ end }}"
 
 SESSION_DRIVER=database
 SESSION_LIFETIME=120
@@ -118,11 +114,12 @@ AWS_USE_PATH_STYLE_ENDPOINT=false
 VITE_APP_NAME="192.168.1.4:5188"
 APP_PORT=8585
 VITE_PORT=5188
-GOOGLE_CLIENT_ID=311900476660-vfm1unmmgf9k3ntbdlie6k35h25np8fn.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=
+GOOGLE_CLIENT_ID="{{ with nomadVar "nomad/jobs/gastos-app" }}{{ .GOOGLE_CLIENT_ID }}{{ end }}"
+GOOGLE_CLIENT_SECRET="{{ with nomadVar "nomad/jobs/gastos-app" }}{{ .GOOGLE_CLIENT_SECRET }}{{ end }}"
 GOOGLE_REDIRECT_URI=https://gastos.jcastellano.com.ar/auth/google/callback
 EOH
       }
+     
 
       resources {
         cpu    = 500 

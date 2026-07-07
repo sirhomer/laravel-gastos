@@ -50,7 +50,7 @@ job "gastos-app" {
 APP_NAME=Laravel
 APP_ENV=local
 APP_KEY=base64:aoGfeTEb1TUUkGRagm5OfohoPqT+EEcwc205laK/hyM=
-APP_DEBUG=true
+APP_DEBUG="{{ with nomadVar "nomad/jobs/gastos-app" }}{{ .APP_DEBUG }}{{ end }}"
 APP_URL=gastos.jcastellano.com.ar
 
 APP_LOCALE=es
